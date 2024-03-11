@@ -24,7 +24,7 @@ export default function Header() {
           <a href="#" className="text-sm font-semibold leading-6 text-gray-900">
             Profile
           </a>
-          <a href="#" className="text-sm font-semibold leading-6 text-gray-900">
+          <a href="/notes" className="text-sm font-semibold leading-6 text-gray-900">
             Notes
           </a>
         </div>

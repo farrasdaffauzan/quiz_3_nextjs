@@ -30,15 +30,23 @@ import React from "react";
 const LayoutComponent = dynamic(() => import("@/layout"));
 
 export default function Notes() {
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const { isOpenAdd, onOpenAdd, onCloseAdd } = useDisclosure();
+  // delete
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const [itemToDeleteId, setItemToDeleteId] = useState(null);
+
+  const HandleDeleteConfirmation = (id) => {
+    HandleDelete(id);
+    setIsDeleteModalOpen(false);
+  };
+  //delete
 
   const router = useRouter();
   const [notes, setNotes] = useState();
 
   const HandleDelete = async (id) => {
     try {
-      const response = await (await fetch(`api/notes/delete/${id}`)).json();
+      const response = await (await fetch(`/api/notes/delete/${id}`)).json();
 
       if (response?.success) {
         router.reload();
@@ -50,6 +58,7 @@ export default function Notes() {
     async function fetchingData() {
       const listNotes = await (await fetch("/api/notes")).json();
       setNotes(listNotes);
+      console.log("Notes =>", listNotes?.data);
     }
     fetchingData();
   }, []);
@@ -63,24 +72,6 @@ export default function Notes() {
               <Button colorScheme="blue" onClick={() => router.push("/notes/add")}>
                 Add Notes
               </Button>
-              <Button colorScheme="blue" onClick={onOpenAdd}>
-                Add Notes
-              </Button>
-
-              <Modal isOpen={isOpenAdd} onClose={onCloseAdd}>
-                <ModalOverlay />
-                <ModalContent>
-                  <ModalHeader>Anda Yakin Akan Menghapus Ini?</ModalHeader>
-                  <ModalCloseButton />
-
-                  <ModalFooter>
-                    <Button onClick={() => router.push("/notes/add")} colorScheme="red">
-                      add
-                    </Button>
-                    <Button onClick={onCloseAdd}>Cancel</Button>
-                  </ModalFooter>
-                </ModalContent>
-              </Modal>
             </Flex>
             <Flex>
               <Grid templateColumns="repeat(2, 1fr)" gap={10}>
@@ -97,32 +88,40 @@ export default function Notes() {
                         <Button onClick={() => router.push(`/notes/edit/${item?.id}`)} flex="1" variant="ghost">
                           Edit
                         </Button>
-                        <Button flex="1" onClick={onOpen} colorScheme="red">
+                        <Button
+                          onClick={() => {
+                            setItemToDeleteId(item?.id);
+                            setIsDeleteModalOpen(true);
+                          }}
+                          colorScheme="red"
+                        >
                           Delete
                         </Button>
                         {/* <Button flex="1" onClick={() => HandleDelete(item?.id)} colorScheme="red">
                           Delete 1
                         </Button> */}
                         {/* <Button onClick={onOpen}>Open Modal</Button> */}
-
-                        <Modal isOpen={isOpen} onClose={onClose}>
-                          <ModalOverlay />
-                          <ModalContent>
-                            <ModalHeader>Anda Yakin Akan Menghapus Ini?</ModalHeader>
-                            <ModalCloseButton />
-
-                            <ModalFooter>
-                              <Button onClick={() => HandleDelete(item?.id)} colorScheme="red">
-                                Delete
-                              </Button>
-                              <Button onClick={onClose}>Cancel</Button>
-                            </ModalFooter>
-                          </ModalContent>
-                        </Modal>
                       </CardFooter>
                     </Card>
                   </GridItem>
                 ))}
+
+                <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)}>
+                  <ModalOverlay />
+                  <ModalContent>
+                    <ModalHeader>Confirm Deletion</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>Apakah yakin ingin menghapus note ini ?</ModalBody>
+                    <ModalFooter>
+                      <Button colorScheme="red" mr={3} onClick={() => HandleDeleteConfirmation(itemToDeleteId)}>
+                        Delete
+                      </Button>
+                      <Button variant="ghost" onClick={() => setIsDeleteModalOpen(false)}>
+                        Cancel
+                      </Button>
+                    </ModalFooter>
+                  </ModalContent>
+                </Modal>
               </Grid>
             </Flex>
           </Box>
